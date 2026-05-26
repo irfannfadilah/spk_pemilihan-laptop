@@ -376,15 +376,6 @@ with st.sidebar:
             }
             st.rerun()
 
-    st.markdown("""
-    <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-        <div style="font-size: 0.75rem; color: #9ca3af;">
-            <span style="display:inline-block; width:7px; height:7px; background:#22c55e; border-radius:50%; margin-right:6px;"></span>
-            Sistem aktif
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
 
 # ===================== HEADER =====================
 st.markdown("""
@@ -569,12 +560,3 @@ with tab4:
             st.warning(f"Kedua metode berbeda pendapat. SAW merekomendasikan **{saw_winner}**, sementara Fuzzy MCDM merekomendasikan **{fuzzy_winner}**. Pertimbangkan keduanya sesuai prioritas Anda.")
     else:
         st.info("Belum ada data untuk dibandingkan.")
-
-
-# ===================== FOOTER =====================
-st.markdown("""
-<hr>
-<div class="footer-text">
-    SPK Pemilihan Laptop — Metode SAW & Fuzzy MCDM (Linear Max Min)
-</div>
-""", unsafe_allow_html=True)
