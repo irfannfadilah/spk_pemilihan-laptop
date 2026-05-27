@@ -548,8 +548,58 @@ with tab4:
 
         st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
         st.markdown("**Grafik Perbandingan Skor**")
-        chart_data = gabung.set_index('Alternatif')[['Skor_SAW', 'Skor_Fuzzy']]
-        st.bar_chart(chart_data)
+        import plotly.graph_objects as go
+
+        fig = go.Figure(data=[
+            go.Bar(
+                name='SAW',
+                x=gabung['Alternatif'],
+                y=gabung['Skor_SAW'],
+                marker_color='#1A73E8',
+                text=gabung['Skor_SAW'].round(3),
+                textposition='outside',
+                textfont=dict(size=11),
+            ),
+            go.Bar(
+                name='Fuzzy MCDM',
+                x=gabung['Alternatif'],
+                y=gabung['Skor_Fuzzy'],
+                marker_color='#0F3460',
+                text=gabung['Skor_Fuzzy'].round(3),
+                textposition='outside',
+                textfont=dict(size=11),
+            ),
+        ])
+
+        fig.update_layout(
+            barmode='group',
+            height=480,
+            plot_bgcolor='#F8F9FA',
+            paper_bgcolor='#FFFFFF',
+            margin=dict(t=40, b=60, l=40, r=40),
+            yaxis=dict(
+                range=[0, 1.15],
+                gridcolor='#E5E7EB',
+                tickformat='.2f',
+                title=None,
+            ),
+            xaxis=dict(
+                tickangle=-20,
+                title=None,
+            ),
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=1.02,
+                xanchor='left',
+                x=0,
+            ),
+            bargap=0.25,
+            bargroupgap=0.08,
+            font=dict(family='Inter, Arial', size=12, color='#374151'),
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("<hr>", unsafe_allow_html=True)
         saw_winner   = hasil_saw.iloc[0]['Alternatif']
