@@ -238,7 +238,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ===================== DATA AWAL =====================
+# == DATA AWAL ==
 if 'data' not in st.session_state:
     st.session_state.data = pd.DataFrame({
         'Alternatif': ['ASUS ROG Zephyrus', 'Lenovo Legion 5', 'MacBook Pro M2', 'Acer Swift 3', 'MSI Modern 14'],
@@ -260,7 +260,7 @@ if 'bobot' not in st.session_state:
 
 
 
-# ===================== SIDEBAR =====================
+# == SIDEBAR ==
 with st.sidebar:
     st.markdown("""
     <div style="padding: 8px 4px 20px;">
@@ -315,23 +315,23 @@ with st.sidebar:
             bobot_baru = {}
             inputs = {}
             for k, v in st.session_state.bobot.items():
-                c1, c2, c3 = st.columns([2, 1, 1])
+                st.markdown(f"<div style='font-size:0.8rem;font-weight:600;color:#374151;margin-top:10px;margin-bottom:4px;'>{k}</div>", unsafe_allow_html=True)
+                c1, c2 = st.columns(2)
                 with c1:
-                    st.markdown(f"<div style='padding-top:9px;font-size:0.85rem;'>{k}</div>", unsafe_allow_html=True)
+                    val = st.number_input("Bobot (%)", 0, 100, int(v['bobot']*100), step=1,
+                                          key=f"be_{k}", label_visibility="visible")
                 with c2:
-                    val = st.number_input("%", 0, 100, int(v['bobot']*100), step=1,
-                                          key=f"be_{k}", label_visibility="collapsed")
-                with c3:
-                    tipe = st.selectbox("T", ["Benefit", "Cost"],
+                    tipe = st.selectbox("Tipe", ["Benefit", "Cost"],
                                         index=0 if v['tipe']==1 else 1,
-                                        key=f"te_{k}", label_visibility="collapsed")
+                                        key=f"te_{k}", label_visibility="visible")
                 inputs[k] = val
                 bobot_baru[k] = {'bobot': val/100, 'tipe': 1 if tipe=="Benefit" else 0}
 
             total = sum(inputs.values())
+            st.markdown("<div style='margin-top:6px'></div>", unsafe_allow_html=True)
             if total == 100:
                 st.success(f"Total: {total}% ✓")
-                if st.button("Simpan", use_container_width=True):
+                if st.button("Simpan", use_container_width=True, key="btn_simpan_bobot"):
                     st.session_state.bobot = bobot_baru
                     st.rerun()
             elif total < 100:
@@ -370,7 +370,7 @@ with st.sidebar:
                 st.warning("Minimal harus ada 1 kriteria.")
             else:
                 hapus_k = st.selectbox("Pilih kriteria", list(st.session_state.bobot.keys()))
-                if st.button("Hapus", use_container_width=True):
+                if st.button("Hapus Kriteria", use_container_width=True, key="btn_hapus_kriteria"):
                     del st.session_state.bobot[hapus_k]
                     if hapus_k in st.session_state.data.columns:
                         st.session_state.data = st.session_state.data.drop(columns=[hapus_k])
@@ -380,7 +380,7 @@ with st.sidebar:
     with st.expander("Hapus Laptop"):
         if not st.session_state.data.empty:
             hapus = st.selectbox("Pilih laptop yang ingin dihapus", st.session_state.data['Alternatif'])
-            if st.button("Hapus", use_container_width=True):
+            if st.button("Hapus Laptop", use_container_width=True, key="btn_hapus_laptop"):
                 st.session_state.data = st.session_state.data[
                     st.session_state.data['Alternatif'] != hapus
                 ].reset_index(drop=True)
@@ -408,7 +408,8 @@ with st.sidebar:
                 'Berat (kg)':        {'bobot': 0.10, 'tipe': 0}
             }
             st.rerun()
-# ===================== HEADER =====================
+
+# == HEADER ==
 st.markdown("""
 <div class="page-header">
     <div class="page-title">Dashboard Pemilihan Laptop</div>
@@ -426,7 +427,7 @@ else:
     hasil_fuzzy = pd.DataFrame(columns=['Alternatif', 'Skor_Fuzzy'])
 
 
-# ===================== STAT CARDS =====================
+# == STAT CARDS ==
 c1, c2, c3, c4 = st.columns(4)
 
 rekomendasi_utama = hasil_saw.iloc[0]['Alternatif'] if not hasil_saw.empty else "-"
@@ -476,7 +477,7 @@ with c4:
 st.markdown("<div style='margin-top: 28px;'></div>", unsafe_allow_html=True)
 
 
-# ===================== KRITERIA CARDS =====================
+# == KRITERIA CARDS ==
 st.markdown("**Bobot Kriteria yang Digunakan**")
 st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
 
@@ -504,10 +505,9 @@ for i, (k, v) in enumerate(st.session_state.bobot.items()):
 st.markdown("<hr>", unsafe_allow_html=True)
 
 
-# ===================== TABS =====================
 tab1, tab2, tab3, tab4 = st.tabs(["Data Laptop", "Metode SAW", "Metode Fuzzy MCDM", "Perbandingan"])
 
-# ----- TAB 1: DATA -----
+# ----- DATA -----
 with tab1:
     st.subheader("Daftar Laptop")
     st.caption("Data ini digunakan sebagai bahan perhitungan. Anda bisa menambah atau menghapus laptop lewat menu di sebelah kiri.")
@@ -521,7 +521,7 @@ with tab1:
     })
     st.dataframe(panduan, use_container_width=True, hide_index=True)
 
-# ----- TAB 2: SAW -----
+# ----- SAW -----
 with tab2:
     st.subheader("Hasil Metode SAW")
     st.caption("SAW (Simple Additive Weighting) menghitung skor dengan menjumlahkan nilai setiap kriteria yang sudah dinormalisasi dan dikalikan bobotnya. Skor mendekati 1.000 berarti lebih baik.")
@@ -542,7 +542,7 @@ with tab2:
     else:
         st.info("Belum ada data. Tambahkan laptop melalui menu di sebelah kiri.")
 
-# ----- TAB 3: FUZZY MCDM -----
+# ----- FUZZY MCDM -----
 with tab3:
     st.subheader("Hasil Metode Fuzzy MCDM")
     st.caption("Fuzzy MCDM menggunakan normalisasi Linear Max Min. Setiap nilai kriteria dikonversi ke skala 0–1 relatif terhadap nilai terbaik dan terburuk di antara semua alternatif, lalu dikalikan bobotnya. Skor mendekati 1.000 berarti lebih baik.")
@@ -563,7 +563,7 @@ with tab3:
     else:
         st.info("Belum ada data. Tambahkan laptop melalui menu di sebelah kiri.")
 
-# ----- TAB 4: PERBANDINGAN -----
+# ----- PERBANDINGAN -----
 with tab4:
     st.subheader("Perbandingan SAW vs Fuzzy MCDM")
     st.caption("Tabel di bawah menunjukkan peringkat masing-masing laptop menurut SAW dan Fuzzy MCDM. Semakin kecil angka peringkat, semakin baik.")
