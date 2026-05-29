@@ -318,7 +318,7 @@ with st.sidebar:
                 st.markdown(f"<div style='font-size:0.8rem;font-weight:600;color:#374151;margin-top:10px;margin-bottom:4px;'>{k}</div>", unsafe_allow_html=True)
                 val = st.number_input("Bobot (%)", 0, 100, int(v['bobot']*100), step=1,
                                       key=f"be_{k}")
-                tipe = st.selectbox("Tipe", ["Benefit — makin besar makin baik", "Cost — makin kecil makin baik"],
+                tipe = st.selectbox("Tipe", ["Benefit", "Cost"],
                                     index=0 if v['tipe']==1 else 1,
                                     key=f"te_{k}")
                 inputs[k] = val
@@ -341,8 +341,8 @@ with st.sidebar:
             nama_k  = st.text_input("Nama kriteria", placeholder="Contoh: Layar (inci)")
             bobot_k = st.number_input("Bobot (%)", 1, 100, 10, step=1)
             tipe_k  = st.selectbox("Tipe", [
-                "Benefit — makin besar makin baik",
-                "Cost — makin kecil makin baik"
+                "Benefit",
+                "Cost"
             ])
 
             if st.button("Tambah Kriteria", use_container_width=True):
