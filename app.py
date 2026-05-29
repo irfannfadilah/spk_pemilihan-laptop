@@ -300,84 +300,138 @@ with st.sidebar:
                 st.error("Nama laptop tidak boleh kosong.")
 
     with st.expander("Kelola Kriteria"):
-        st.caption("Tambah, edit bobot/tipe, atau hapus kriteria. Total bobot harus 100%.")
 
         aksi_kriteria = st.radio(
             "Aksi",
-            ["Edit Bobot & Tipe", "Tambah Kriteria", "Hapus Kriteria"],
+            ["Lihat & Edit Bobot", "Tambah Kriteria Baru", "Hapus Kriteria"],
             horizontal=True,
             label_visibility="collapsed"
         )
 
-        # ── EDIT BOBOT & TIPE ──
-        if aksi_kriteria == "Edit Bobot & Tipe":
+        st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+
+        # ── LIHAT & EDIT BOBOT ──
+        if aksi_kriteria == "Lihat & Edit Bobot":
             bobot_baru = {}
             inputs = {}
-            keys = list(st.session_state.bobot.keys())
 
-            for k in keys:
-                v = st.session_state.bobot[k]
-                col_nama, col_bobot, col_tipe = st.columns([2, 1, 1])
+            st.markdown(
+                "<div style='display:grid; grid-template-columns:2fr 1fr 2fr; gap:4px; "
+                "font-size:0.72rem; font-weight:600; color:#9ca3af; text-transform:uppercase; "
+                "letter-spacing:0.05em; padding-bottom:4px;'>"
+                "<span>Kriteria</span><span>Bobot</span><span>Arah</span></div>",
+                unsafe_allow_html=True
+            )
+
+            for k, v in st.session_state.bobot.items():
+                col_nama, col_bobot, col_tipe = st.columns([2, 1, 2])
                 with col_nama:
-                    st.markdown(f"<div style='padding-top:8px; font-size:0.85rem;'>{k}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='padding-top:9px; font-size:0.85rem; color:#111827;'>{k}</div>",
+                                unsafe_allow_html=True)
                 with col_bobot:
-                    val = st.number_input("Bobot %", 0, 100, int(v['bobot'] * 100), step=1,
+                    val = st.number_input("b", 0, 100, int(v['bobot'] * 100), step=1,
                                           key=f"bobot_e_{k}", label_visibility="collapsed")
                 with col_tipe:
-                    tipe = st.selectbox("Tipe", ["Benefit ↑", "Cost ↓"],
+                    pilihan_arah = ["↑ Makin besar", "↓ Makin kecil"]
+                    tipe = st.selectbox("t", pilihan_arah,
                                         index=0 if v['tipe'] == 1 else 1,
                                         key=f"tipe_e_{k}", label_visibility="collapsed")
                 inputs[k] = val
-                bobot_baru[k] = {'bobot': val / 100, 'tipe': 1 if tipe == "Benefit ↑" else 0}
+                bobot_baru[k] = {'bobot': val / 100, 'tipe': 1 if tipe == "↑ Makin besar" else 0}
 
             total = sum(inputs.values())
-            sisa  = 100 - total
+            st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
             if total == 100:
-                st.success(f"Total: {total}% ✓")
-            elif total < 100:
-                st.info(f"Total: {total}% — kurang {sisa}%")
-            else:
-                st.error(f"Total: {total}% — kelebihan {abs(sisa)}%")
-
-            if total == 100:
-                if st.button("Simpan Bobot", use_container_width=True):
+                st.success(f"Total bobot: {total}% ✓")
+                if st.button("Simpan Perubahan", use_container_width=True):
                     st.session_state.bobot = bobot_baru
-                    st.success("Bobot berhasil disimpan.")
+                    st.success("Tersimpan!")
                     st.rerun()
+            elif total < 100:
+                st.info(f"Total bobot: {total}% — kurangi {100 - total}% lagi")
+            else:
+                st.error(f"Total bobot: {total}% — kelebihan {total - 100}%, kurangi salah satu")
 
-        # ── TAMBAH KRITERIA ──
-        elif aksi_kriteria == "Tambah Kriteria":
-            nama_k = st.text_input("Nama kriteria", placeholder="Contoh: Layar (inci)")
-            col_b, col_t = st.columns(2)
-            with col_b:
-                bobot_k = st.number_input("Bobot (%)", 1, 100, 10, step=1)
-            with col_t:
-                tipe_k = st.selectbox("Tipe", ["Benefit ↑ (makin besar makin baik)",
-                                                "Cost ↓ (makin kecil makin baik)"])
-            nilai_default = st.number_input("Nilai default untuk semua laptop", value=0.0, step=0.1)
-            st.caption("Nilai default akan dipakai untuk semua laptop yang sudah ada.")
+        # ── TAMBAH KRITERIA BARU ──
+        elif aksi_kriteria == "Tambah Kriteria Baru":
 
-            if st.button("Tambah Kriteria", use_container_width=True):
+            nama_k = st.text_input(
+                "Nama kriteria baru",
+                placeholder="Contoh: Ukuran Layar (inci), Garansi (tahun) ...",
+                help="Tulis nama kriteria yang ingin kamu tambahkan ke perbandingan laptop."
+            )
+
+            st.markdown("**Kriteria ini makin bagus kalau nilainya...**")
+            col_t1, col_t2 = st.columns(2)
+            with col_t1:
+                btn_besar = st.button("📈  Makin besar makin bagus",
+                                      use_container_width=True, key="tipe_besar")
+            with col_t2:
+                btn_kecil = st.button("📉  Makin kecil makin bagus",
+                                      use_container_width=True, key="tipe_kecil")
+
+            # Simpan pilihan tipe ke session_state supaya tidak hilang saat rerun parsial
+            if btn_besar:
+                st.session_state['_tipe_baru'] = 1
+            if btn_kecil:
+                st.session_state['_tipe_baru'] = 0
+
+            tipe_terpilih = st.session_state.get('_tipe_baru', None)
+
+            if tipe_terpilih is not None:
+                label_tipe = "📈 Makin besar makin bagus" if tipe_terpilih == 1 else "📉 Makin kecil makin bagus"
+                st.markdown(
+                    f"<div style='background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; "
+                    f"padding:8px 12px; font-size:0.85rem; color:#166534; margin-bottom:8px;'>"
+                    f"✓ Dipilih: <b>{label_tipe}</b></div>",
+                    unsafe_allow_html=True
+                )
+
+            st.markdown("**Seberapa penting kriteria ini?**")
+            bobot_k = st.slider(
+                "Bobot kepentingan",
+                min_value=1, max_value=50, value=10, step=1,
+                format="%d%%",
+                label_visibility="collapsed",
+                help="Geser untuk menentukan seberapa besar pengaruh kriteria ini terhadap skor akhir."
+            )
+            total_skrg = int(round(sum(v['bobot'] for v in st.session_state.bobot.values()) * 100))
+            sisa_tersedia = 100 - total_skrg
+            if bobot_k <= sisa_tersedia:
+                st.caption(f"Bobot dipilih: **{bobot_k}%** — sisa bobot yang tersedia: {sisa_tersedia}%")
+            else:
+                st.warning(f"Bobot {bobot_k}% melebihi sisa yang tersedia ({sisa_tersedia}%). "
+                           f"Setelah tambah, sesuaikan bobot lain di tab 'Lihat & Edit Bobot'.")
+
+            st.markdown("**Isi nilai kriteria ini untuk setiap laptop yang sudah ada:**")
+            st.caption("Ini supaya laptop lama tetap bisa dibandingkan dengan kriteria baru.")
+            nilai_per_laptop = {}
+            for _, row in st.session_state.data.iterrows():
+                nilai_per_laptop[row['Alternatif']] = st.number_input(
+                    row['Alternatif'],
+                    value=0.0, step=0.1,
+                    key=f"val_baru_{row['Alternatif']}"
+                )
+
+            st.markdown("<div style='margin-top: 4px;'></div>", unsafe_allow_html=True)
+            if st.button("✅  Tambahkan Kriteria Ini", use_container_width=True):
                 nama_k = nama_k.strip()
                 if not nama_k:
                     st.error("Nama kriteria tidak boleh kosong.")
                 elif nama_k in st.session_state.bobot:
                     st.error("Kriteria dengan nama ini sudah ada.")
+                elif tipe_terpilih is None:
+                    st.error("Pilih dulu arah kriteria (makin besar atau makin kecil).")
                 else:
-                    tipe_val = 1 if tipe_k.startswith("Benefit") else 0
-                    total_sekarang = sum(v['bobot'] for v in st.session_state.bobot.values())
-                    bobot_val = bobot_k / 100
-
-                    # Tambah ke bobot
-                    st.session_state.bobot[nama_k] = {'bobot': bobot_val, 'tipe': tipe_val}
-
-                    # Tambah kolom ke data
-                    st.session_state.data[nama_k] = nilai_default
-
-                    sisa_bobot = round(1 - total_sekarang - bobot_val, 4)
+                    st.session_state.bobot[nama_k] = {'bobot': bobot_k / 100, 'tipe': tipe_terpilih}
+                    for laptop, val in nilai_per_laptop.items():
+                        st.session_state.data.loc[
+                            st.session_state.data['Alternatif'] == laptop, nama_k
+                        ] = val
+                    # Bersihkan state sementara
+                    if '_tipe_baru' in st.session_state:
+                        del st.session_state['_tipe_baru']
                     st.success(f"Kriteria '{nama_k}' berhasil ditambahkan!")
-                    if abs(sisa_bobot) > 0.001:
-                        st.warning(f"Total bobot sekarang {round((total_sekarang + bobot_val)*100)}%. Sesuaikan di menu Edit Bobot & Tipe.")
                     st.rerun()
 
         # ── HAPUS KRITERIA ──
@@ -385,10 +439,15 @@ with st.sidebar:
             if len(st.session_state.bobot) <= 1:
                 st.warning("Minimal harus ada 1 kriteria.")
             else:
-                hapus_k = st.selectbox("Pilih kriteria yang akan dihapus",
-                                       list(st.session_state.bobot.keys()))
-                st.caption(f"Bobot saat ini: {int(st.session_state.bobot[hapus_k]['bobot']*100)}%")
-                if st.button("Hapus Kriteria", use_container_width=True):
+                hapus_k = st.selectbox(
+                    "Kriteria mana yang ingin dihapus?",
+                    list(st.session_state.bobot.keys())
+                )
+                bobot_hapus = int(st.session_state.bobot[hapus_k]['bobot'] * 100)
+                tipe_hapus  = "makin besar makin bagus" if st.session_state.bobot[hapus_k]['tipe'] == 1 else "makin kecil makin bagus"
+                st.caption(f"Bobot: {bobot_hapus}% · Arah: {tipe_hapus}")
+                st.warning(f"Kolom **{hapus_k}** akan dihapus dari semua data laptop.")
+                if st.button("Hapus Kriteria Ini", use_container_width=True):
                     del st.session_state.bobot[hapus_k]
                     if hapus_k in st.session_state.data.columns:
                         st.session_state.data = st.session_state.data.drop(columns=[hapus_k])
