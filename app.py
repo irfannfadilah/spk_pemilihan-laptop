@@ -316,16 +316,13 @@ with st.sidebar:
             inputs = {}
             for k, v in st.session_state.bobot.items():
                 st.markdown(f"<div style='font-size:0.8rem;font-weight:600;color:#374151;margin-top:10px;margin-bottom:4px;'>{k}</div>", unsafe_allow_html=True)
-                c1, c2 = st.columns(2)
-                with c1:
-                    val = st.number_input("Bobot (%)", 0, 100, int(v['bobot']*100), step=1,
-                                          key=f"be_{k}", label_visibility="visible")
-                with c2:
-                    tipe = st.selectbox("Tipe", ["Benefit", "Cost"],
-                                        index=0 if v['tipe']==1 else 1,
-                                        key=f"te_{k}", label_visibility="visible")
+                val = st.number_input("Bobot (%)", 0, 100, int(v['bobot']*100), step=1,
+                                      key=f"be_{k}")
+                tipe = st.selectbox("Tipe", ["Benefit — makin besar makin baik", "Cost — makin kecil makin baik"],
+                                    index=0 if v['tipe']==1 else 1,
+                                    key=f"te_{k}")
                 inputs[k] = val
-                bobot_baru[k] = {'bobot': val/100, 'tipe': 1 if tipe=="Benefit" else 0}
+                bobot_baru[k] = {'bobot': val/100, 'tipe': 1 if tipe.startswith("Benefit") else 0}
 
             total = sum(inputs.values())
             st.markdown("<div style='margin-top:6px'></div>", unsafe_allow_html=True)
@@ -344,8 +341,8 @@ with st.sidebar:
             nama_k  = st.text_input("Nama kriteria", placeholder="Contoh: Layar (inci)")
             bobot_k = st.number_input("Bobot (%)", 1, 100, 10, step=1)
             tipe_k  = st.selectbox("Tipe", [
-                "Benefit",
-                "Cost"
+                "Benefit — makin besar makin baik",
+                "Cost — makin kecil makin baik"
             ])
 
             if st.button("Tambah Kriteria", use_container_width=True):
@@ -408,6 +405,16 @@ with st.sidebar:
             }
             st.rerun()
 
+    st.markdown("""
+    <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+        <div style="font-size: 0.75rem; color: #9ca3af;">
+            <span style="display:inline-block; width:7px; height:7px; background:#22c55e; border-radius:50%; margin-right:6px;"></span>
+            Sistem aktif
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 #  HEADER 
 st.markdown("""
 <div class="page-header">
@@ -417,7 +424,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# HITUNG HASIL 
+#  HITUNG HASIL 
 if not st.session_state.data.empty:
     hasil_saw   = hitung_saw(st.session_state.data, st.session_state.bobot)
     hasil_fuzzy = hitung_fuzzy(st.session_state.data, st.session_state.bobot)
@@ -579,8 +586,34 @@ with tab4:
 
         st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
         st.markdown("**Grafik Perbandingan Skor**")
-        chart_data = gabung.set_index('Alternatif')[['Skor_SAW', 'Skor_Fuzzy']]
-        st.bar_chart(chart_data, height=400)
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            name='SAW',
+            x=gabung['Alternatif'],
+            y=gabung['Skor_SAW'],
+            marker_color='#3b82f6',
+            width=0.25
+        ))
+        fig.add_trace(go.Bar(
+            name='Fuzzy MCDM',
+            x=gabung['Alternatif'],
+            y=gabung['Skor_Fuzzy'],
+            marker_color='#1e3a5f',
+            width=0.25
+        ))
+        fig.update_layout(
+            barmode='group',
+            height=420,
+            margin=dict(l=20, r=20, t=20, b=40),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0),
+            yaxis=dict(gridcolor='#f0f0f0', range=[0, 1.05]),
+            xaxis=dict(tickfont=dict(size=11)),
+            bargroupgap=0.3
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("<hr>", unsafe_allow_html=True)
         saw_winner   = hasil_saw.iloc[0]['Alternatif']
