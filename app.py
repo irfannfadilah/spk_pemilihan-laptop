@@ -580,7 +580,7 @@ with tab4:
         st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
         st.markdown("**Grafik Perbandingan Skor**")
         chart_data = gabung.set_index('Alternatif')[['Skor_SAW', 'Skor_Fuzzy']]
-        st.bar_chart(chart_data)
+        st.bar_chart(chart_data, height=400)
 
         st.markdown("<hr>", unsafe_allow_html=True)
         saw_winner   = hasil_saw.iloc[0]['Alternatif']
