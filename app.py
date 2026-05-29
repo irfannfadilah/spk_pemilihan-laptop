@@ -405,16 +405,6 @@ with st.sidebar:
             }
             st.rerun()
 
-    st.markdown("""
-    <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
-        <div style="font-size: 0.75rem; color: #9ca3af;">
-            <span style="display:inline-block; width:7px; height:7px; background:#22c55e; border-radius:50%; margin-right:6px;"></span>
-            Sistem aktif
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
 #  HEADER 
 st.markdown("""
 <div class="page-header">
@@ -424,7 +414,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-#  HITUNG HASIL 
+# ===================== HITUNG HASIL =====================
 if not st.session_state.data.empty:
     hasil_saw   = hitung_saw(st.session_state.data, st.session_state.bobot)
     hasil_fuzzy = hitung_fuzzy(st.session_state.data, st.session_state.bobot)
@@ -593,14 +583,20 @@ with tab4:
             x=gabung['Alternatif'],
             y=gabung['Skor_SAW'],
             marker_color='#3b82f6',
-            width=0.25
+            width=0.25,
+            text=gabung['Skor_SAW'].round(3),
+            textposition='outside',
+            textfont=dict(size=11, color='#111827')
         ))
         fig.add_trace(go.Bar(
             name='Fuzzy MCDM',
             x=gabung['Alternatif'],
             y=gabung['Skor_Fuzzy'],
             marker_color='#1e3a5f',
-            width=0.25
+            width=0.25,
+            text=gabung['Skor_Fuzzy'].round(3),
+            textposition='outside',
+            textfont=dict(size=11, color='#111827')
         ))
         fig.update_layout(
             barmode='group',
@@ -609,7 +605,7 @@ with tab4:
             plot_bgcolor='white',
             paper_bgcolor='white',
             legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0),
-            yaxis=dict(gridcolor='#f0f0f0', range=[0, 1.05]),
+            yaxis=dict(gridcolor='#f0f0f0', range=[0, 1.15]),
             xaxis=dict(tickfont=dict(size=11)),
             bargroupgap=0.3
         )
