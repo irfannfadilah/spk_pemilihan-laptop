@@ -344,8 +344,8 @@ with st.sidebar:
             nama_k  = st.text_input("Nama kriteria", placeholder="Contoh: Layar (inci)")
             bobot_k = st.number_input("Bobot (%)", 1, 100, 10, step=1)
             tipe_k  = st.selectbox("Tipe", [
-                "Benefit — makin besar makin baik",
-                "Cost — makin kecil makin baik"
+                "Benefit",
+                "Cost"
             ])
 
             if st.button("Tambah Kriteria", use_container_width=True):
